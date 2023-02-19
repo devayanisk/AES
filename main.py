@@ -4,7 +4,7 @@ from aesDecrypt import *
 plaintext = input('Enter plaintext: ')
 key = input('Enter 128 bit key: ')
 
-if (len(plaintext)!=16 and len(key)!=16):
+if (len(plaintext)!=16 or len(key)!=16):
     print('Input Data and key must be 32 hex digits long.')
 else:
     ciphertext = encrypt(plaintext, key)

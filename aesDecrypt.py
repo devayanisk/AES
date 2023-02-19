@@ -8,6 +8,7 @@ def InvSubstitution(sbox, state_array):
     for i in range(4):
         for j in range(4):
             new_state_array[i][j] = inv_sbox[state_array[i][j]]
+    print("\nInverse Substitution:",new_state_array)
     return new_state_array
 
 #Performs a circular right shift of the bytes in a word.
@@ -16,6 +17,7 @@ def InvShiftRows(state_array):
     for i in range(4):
         for j in range(4):
             new_state_array[i][(j+i)%4] = state_array[i][j]
+    print("\nInverse Shift Row:",new_state_array)
     return new_state_array
 
 #Each column of the state matrix is multiplied by a fixed polynomial matrix using Galois field arithmetic
@@ -26,7 +28,9 @@ def InvMixColumns(B):
         for j in range(4):
             for k in range(4):
                 C[i][j] ^= gf_2_3_hex_mult(int(A[i][k], 16), int(B[k][j], 16))
-    return [["0x{:02x}".format(elem) for elem in row] for row in C]
+    C = [["0x{:02x}".format(elem) for elem in row] for row in C]
+    print("\nInverse Mix Column:",C)
+    return C
 
 
 def gf_2_3_hex_mult(a, b):
@@ -48,12 +52,15 @@ def addRoundKey(state_array, key):
     for i in range(4):
         for j in range(4):
             new_state_array[i][j] = hex(int(state_array[i][j],16)^int(key[j][i],16))
-    return [["0x{:02x}".format(int(elem, 16)) for elem in row] for row in new_state_array]
+    new_state_array = [["0x{:02x}".format(int(elem, 16)) for elem in row] for row in new_state_array]
+    print("Add Round Key:",new_state_array)
+    return new_state_array
 
 
 
 #Decrypts a ciphertext using the AES decryption algorithm with a 128-bit key
 def decrypt(ciphertext, keytext):
+    print("\n-----------------------Decryption-------------------------------\n")
     hex_key = keytext.encode().hex()
     ciphertext_array = [[0 for x in range(4)] for x in range(4)]
     key_array = [[0 for x in range(4)] for x in range(4)]
@@ -67,17 +74,20 @@ def decrypt(ciphertext, keytext):
 
     keys = keyGeneration(key_array, sbox)
 
+    print("\n0")
     state_array = addRoundKey(ciphertext_array, keys[40:44])
     j = 36
 
     for i in range(9):
+        print("\n",i+1)
         state_array = InvShiftRows(state_array)
         state_array = InvSubstitution(inv_sbox, state_array)
         state_array = addRoundKey(state_array, keys[j:j+4])
         state_array = InvMixColumns(state_array)        
         j -= 4
     
-    
+
+    print("\n10")
     state_array = InvShiftRows(state_array)
     state_array = InvSubstitution(inv_sbox, state_array)
     state_array = addRoundKey(state_array, keys[j:j+4])
